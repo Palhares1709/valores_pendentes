@@ -21,14 +21,14 @@
 </head>
 <body>
   <div class="card-pesquisa">
-    <h5>CONSULTA DE DEVEDORES</h5>
+    <h5>VALORES PENDENTE</h5>
     <div class="mb-3">
       <label>Nome</label>
       <select id="nomeBusca" class="form-select"><option>Carregando nomes...</option></select>
     </div>
     <div class="row g-2 mb-3">
-      <div class="col"><label>Início</label><input type="date" id="d1" class="form-control"></div>
-      <div class="col"><label>Fim</label><input type="date" id="d2" class="form-control"></div>
+      <div class="col"><label>Data Início</label><input type="date" id="d1" class="form-control"></div>
+      <div class="col"><label>Data Final</label><input type="date" id="d2" class="form-control"></div>
     </div>
     <button class="btn btn-busca" id="btn" onclick="pesquisar()">PESQUISAR PENDÊNCIAS</button>
     <div id="loading-container"><div class="spinner-border"></div><p class="mt-2 text-primary fw-bold">Processando...</p></div>
