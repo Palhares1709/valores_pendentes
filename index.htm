@@ -31,37 +31,34 @@
       <div class="col"><label>Fim</label><input type="date" id="d2" class="form-control"></div>
     </div>
     <button class="btn btn-busca" id="btn" onclick="pesquisar()">PESQUISAR PENDÊNCIAS</button>
-    
-    <div id="loading-container">
-      <div class="spinner-border" role="status"></div>
-      <p class="mt-2 text-primary fw-bold" style="font-size: 12px;">Processando...</p>
-    </div>
-
+    <div id="loading-container"><div class="spinner-border"></div><p class="mt-2 text-primary fw-bold">Processando...</p></div>
     <div id="statusLimpo" class="status-box bg-limpo"><h1>✅</h1><h3>TUDO PAGO!</h3></div>
-    
     <div id="statusDevedor" class="status-box bg-devedor">
       <h6 class="text-center fw-bold">TOTAL EM ABERTO:</h6>
       <h2 id="totalValor" class="text-center fw-bold"></h2>
-      <hr>
-      <div id="listaDetalhes" style="max-height: 200px; overflow-y: auto;"></div>
+      <hr><div id="listaDetalhes" style="max-height: 200px; overflow-y: auto;"></div>
     </div>
   </div>
 
   <script>
-    // SUBSTITUA ABAIXO PELO SEU URL DO APP DA WEB QUE VOCÊ COPIOU
-    const URL_API = "https://script.google.com/macros/s/AKfycbzo0G_949SJaxmJJFc8k8qxfFc7yrQenpyATBX5nKB2qkY-Ar61TCFfzkr199L50PCp8w/exec
-Link Consulta devedores"; 
+    // AQUI ESTÁ O SEGREDO: Cole o link que você copiou do Google entre as aspas abaixo:
+    const URL_API = "https://script.google.com/macros/s/AKfycbzo0G_949SJaxmJJFc8k8qxfFc7yrQenpyATBX5nKB2qkY-Ar61TCFfzkr199L50PCp8w/exec"; 
 
     window.onload = function() {
       let hoje = new Date();
       document.getElementById('d1').value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
       document.getElementById('d2').value = hoje.toISOString().split('T')[0];
 
+      // Tenta buscar os nomes
       fetch(`${URL_API}?acao=obterNomes`)
         .then(res => res.json())
         .then(nomes => {
           let select = document.getElementById('nomeBusca');
           select.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+        })
+        .catch(err => {
+          document.getElementById('nomeBusca').innerHTML = "<option>Erro ao carregar nomes</option>";
+          console.error(err);
         });
     }
 
@@ -69,8 +66,6 @@ Link Consulta devedores";
       const nome = document.getElementById('nomeBusca').value;
       const d1 = document.getElementById('d1').value;
       const d2 = document.getElementById('d2').value;
-      
-      document.getElementById('btn').disabled = true;
       document.getElementById('loading-container').style.display = "block";
       document.getElementById('statusLimpo').style.display = "none";
       document.getElementById('statusDevedor').style.display = "none";
@@ -78,7 +73,6 @@ Link Consulta devedores";
       fetch(`${URL_API}?acao=buscarDevedor&nome=${encodeURIComponent(nome)}&d1=${d1}&d2=${d2}`)
         .then(res => res.json())
         .then(res => {
-          document.getElementById('btn').disabled = false;
           document.getElementById('loading-container').style.display = "none";
           if(res.encontrou) {
             document.getElementById('statusDevedor').style.display = "block";
