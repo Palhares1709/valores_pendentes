@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding: 15px; display: flex; justify-content: center; }
+    .card-pesquisa { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    h5 { color: #1a73e8; text-align: center; font-weight: bold; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; margin-bottom: 20px; }
+    label { font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 4px; display: block; }
+    .form-control, .form-select { border-radius: 10px; padding: 12px; border: 1px solid #ddd; background: #fafafa; font-size: 16px; }
+    .btn-busca { background: #1a73e8; color: white; border: none; border-radius: 10px; padding: 15px; font-weight: bold; width: 100%; margin-top: 15px; cursor: pointer; }
+    #loading-container { display: none; text-align: center; margin: 30px 0; }
+    .spinner-border { color: #1a73e8; width: 3rem; height: 3rem; }
+    .status-box { border-radius: 12px; padding: 15px; margin-top: 20px; display: none; }
+    .bg-limpo { border: 2px solid #28a745; background-color: #e8f5e9; color: #2e7d32; text-align: center; }
+    .bg-devedor { border: 2px solid #dc3545; background-color: #fdf2f2; color: #d32f2f; }
+    .item-lista { font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 10px 0; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+  <div class="card-pesquisa">
+    <h5>CONSULTA DE DEVEDORES</h5>
+    <div class="mb-3">
+      <label>Nome do Devedor</label>
+      <select id="nomeBusca" class="form-select"><option>Carregando nomes...</option></select>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col"><label>Início</label><input type="date" id="d1" class="form-control"></div>
+      <div class="col"><label>Fim</label><input type="date" id="d2" class="form-control"></div>
+    </div>
+    <button class="btn btn-busca" id="btn" onclick="pesquisar()">PESQUISAR PENDÊNCIAS</button>
+    
+    <div id="loading-container">
+      <div class="spinner-border" role="status"></div>
+      <p class="mt-2 text-primary fw-bold" style="font-size: 12px;">Processando...</p>
+    </div>
+
+    <div id="statusLimpo" class="status-box bg-limpo"><h1>✅</h1><h3>TUDO PAGO!</h3></div>
+    
+    <div id="statusDevedor" class="status-box bg-devedor">
+      <h6 class="text-center fw-bold">TOTAL EM ABERTO:</h6>
+      <h2 id="totalValor" class="text-center fw-bold"></h2>
+      <hr>
+      <div id="listaDetalhes" style="max-height: 200px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <script>
+    // SUBSTITUA ABAIXO PELO SEU URL DO APP DA WEB QUE VOCÊ COPIOU
+    const URL_API = "https://script.google.com/macros/s/AKfycbzo0G_949SJaxmJJFc8k8qxfFc7yrQenpyATBX5nKB2qkY-Ar61TCFfzkr199L50PCp8w/exec
+
+Link Consulta devedores"; 
+
+    window.onload = function() {
+      let hoje = new Date();
+      document.getElementById('d1').value = new Date(hoje.getFullYear(), hoje.getMonth(), 1).toISOString().split('T')[0];
+      document.getElementById('d2').value = hoje.toISOString().split('T')[0];
+
+      fetch(`${URL_API}?acao=obterNomes`)
+        .then(res => res.json())
+        .then(nomes => {
+          let select = document.getElementById('nomeBusca');
+          select.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+        });
+    }
+
+    function pesquisar() {
+      const nome = document.getElementById('nomeBusca').value;
+      const d1 = document.getElementById('d1').value;
+      const d2 = document.getElementById('d2').value;
+      
+      document.getElementById('btn').disabled = true;
+      document.getElementById('loading-container').style.display = "block";
+      document.getElementById('statusLimpo').style.display = "none";
+      document.getElementById('statusDevedor').style.display = "none";
+
+      fetch(`${URL_API}?acao=buscarDevedor&nome=${encodeURIComponent(nome)}&d1=${d1}&d2=${d2}`)
+        .then(res => res.json())
+        .then(res => {
+          document.getElementById('btn').disabled = false;
+          document.getElementById('loading-container').style.display = "none";
+          if(res.encontrou) {
+            document.getElementById('statusDevedor').style.display = "block";
+            document.getElementById('totalValor').innerText = res.total;
+            document.getElementById('listaDetalhes').innerHTML = res.itens.map(i => 
+              `<div class="item-lista"><span>${i.data} - ${i.desc}</span><b>${i.valor}</b></div>`).join('');
+          } else {
+            document.getElementById('statusLimpo').style.display = "block";
+          }
+        });
+    }
+  </script>
+</body>
+</html>
